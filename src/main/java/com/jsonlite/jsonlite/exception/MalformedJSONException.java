@@ -1,6 +1,6 @@
 package com.jsonlite.jsonlite.exception;
 
-public class MalformedJSONException extends JSONException{
+public class MalformedJSONException extends JSONException {
 
     public MalformedJSONException(){
         super();

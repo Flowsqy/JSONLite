@@ -1,6 +1,6 @@
 package com.jsonlite.jsonlite.exception;
 
-public class JSONException extends Exception{
+public class JSONException extends RuntimeException {
 
     public JSONException(){
         super();
@@ -12,14 +12,6 @@ public class JSONException extends Exception{
 
     public JSONException(String message, Throwable throwable) {
         super(message, throwable);
-    }
-
-    public final void throwException(){
-        try {
-            throw this;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
 }

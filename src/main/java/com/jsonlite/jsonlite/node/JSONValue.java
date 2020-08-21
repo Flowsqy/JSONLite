@@ -22,6 +22,7 @@ public class JSONValue <T> implements JSONNode {
         return value;
     }
 
+    @SuppressWarnings({"unchecked"})
     public <C> C get(Class<C> clazz){
         return (C) value;
     }
@@ -55,8 +56,7 @@ public class JSONValue <T> implements JSONNode {
             return JSONParser.quote((String) value);
         }
 
-        new SerializeJSONException("Incompatible type : "+ value.getClass().getName()+" . Only boolean, number and string are allowed").throwException();
-        return null;
+        throw new SerializeJSONException("Incompatible type : "+ value.getClass().getName()+" . Only boolean, number and string are allowed");
     }
 
     @Override

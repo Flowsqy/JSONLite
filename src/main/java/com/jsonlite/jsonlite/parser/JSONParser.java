@@ -68,20 +68,18 @@ public class JSONParser {
                         case ':':
                             final int lastIndex = tokens.size()-1;
                             if(tokens.isEmpty() || tokens.get(lastIndex).getType() != JSONToken.STRING){
-                                new MalformedJSONException("There is colon without string before").throwException();
-                                return new ArrayList<>();
+                                throw new MalformedJSONException("There is colon without string before");
                             }
                             final String key = (String) tokens.remove(lastIndex).getValue();
                             tokens.add(new JSONToken<>(JSONToken.KEY, key));
                             needComma = false;
                             continue;
                         default:
-                            new MalformedJSONException("Impossible character after a value or a key").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Impossible character after a value or a key");
                     }
                 }
                 /*
-                 * Detect Strings
+                 * Handle String
                  */
 
                 if(escape){
@@ -108,8 +106,7 @@ public class JSONParser {
                             currentString.append("\\");
                             break;
                         default:
-                            new MalformedJSONException("Impossible character after a '\\' in a string").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Impossible character after a '\\' in a string");
                     }
                     escape = false;
                     continue;
@@ -120,8 +117,7 @@ public class JSONParser {
                         continue;
                     }
                     else {
-                        new MalformedJSONException("Awkward character : \\").throwException();
-                        return new ArrayList<>();
+                        throw new MalformedJSONException("Awkward character : \\");
                     }
                 }
 
@@ -157,7 +153,7 @@ public class JSONParser {
                  */
 
                 /*
-                 * number gestion
+                 * Handle numbers
                  */
                 if(c == '-' || c == '+'){
                     if(inNumber) {
@@ -166,8 +162,7 @@ public class JSONParser {
                             hasBeenExponent = false;
                             continue;
                         }
-                        new MalformedJSONException("There a negative sign in a number").throwException();
-                        return new ArrayList<>();
+                        throw new MalformedJSONException("There a negative sign in a number");
                     }
                     currentNumber.append(c);
                     inNumber = true;
@@ -185,16 +180,13 @@ public class JSONParser {
                 else if(inNumber){
                     if(c == '.'){
                         if(hasPoint){
-                            new MalformedJSONException("There are two points in the number representation").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There are two points in the number representation");
                         }
                         else if(hasExponent){
-                            new MalformedJSONException("There is an exponent before a point").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There is an exponent before a point");
                         }
                         else if(hasBeenRelative){
-                            new MalformedJSONException("There is a point after the relative sign").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There is a point after the relative sign");
                         }
                         else{
                             hasPoint = true;
@@ -206,12 +198,10 @@ public class JSONParser {
                     }
                     else if(c == 'e' || c == 'E'){
                         if(hasExponent){
-                            new MalformedJSONException("There are two exponent in the number representation").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There are two exponent in the number representation");
                         }
                         else if(hasBeenRelative){
-                            new MalformedJSONException("There is an exponent after the negative sign").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There is an exponent after the negative sign");
                         }
                         else{
                             hasExponent = true;
@@ -224,16 +214,13 @@ public class JSONParser {
                     else{
                         final char endChar = currentNumber.charAt(currentNumber.length() - 1);
                         if(endChar == '.') {
-                            new MalformedJSONException("Number ends with a dot").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Number ends with a dot");
                         }
                         else if(endChar == '+' || endChar == '-'){
-                            new MalformedJSONException("Number ends with a relative sign").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Number ends with a relative sign");
                         }
                         else if(endChar == 'e' || endChar == 'E'){
-                            new MalformedJSONException("Number end with a exponent").throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Number end with a exponent");
                         }
                         inNumber = false;
                         hasPoint = false;
@@ -254,8 +241,7 @@ public class JSONParser {
                                 else
                                     tokens.add(new JSONToken<>(JSONToken.DOUBLE, result));
                             }catch (NumberFormatException e){
-                                new MalformedJSONException("Wrong number : " + argNumber).throwException();
-                                return new ArrayList<>();
+                                throw new MalformedJSONException("Wrong number : " + argNumber);
                             }
                         }
                         else{
@@ -266,8 +252,7 @@ public class JSONParser {
                                 else
                                     tokens.add(new JSONToken<>(JSONToken.LONG, result));
                             }catch (NumberFormatException e){
-                                new MalformedJSONException("Wrong number : " + argNumber).throwException();
-                                return new ArrayList<>();
+                                throw new MalformedJSONException("Wrong number : " + argNumber);
                             }
                         }
                         if (
@@ -277,8 +262,7 @@ public class JSONParser {
                                         (c == ']')
                                 )
                         ){
-                            new MalformedJSONException("There is an awkward character after a number: "+c).throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("There is an awkward character after a number: "+c);
                         }
                         currentNumber = new StringBuilder();
                         if(c == ',')
@@ -287,7 +271,7 @@ public class JSONParser {
                 }
 
                 /*
-                 * Boolean and null gestion
+                 * Handle Boolean and null
                  */
                 if(Character.isAlphabetic(c)){
                     if(!inBoolean)
@@ -316,15 +300,14 @@ public class JSONParser {
                             needComma = true;
                         }
                         else{
-                            new MalformedJSONException("Awkward value : "+ currentBoolean).throwException();
-                            return new ArrayList<>();
+                            throw new MalformedJSONException("Awkward value : "+ currentBoolean);
                         }
                     }
                     continue;
                 }
 
                 /*
-                 * node gestion
+                 * Handle nodes
                  */
                 if(c == '{'){
                     tokens.add(new JSONToken<>(JSONToken.BEGIN_OBJECT, null));
@@ -345,8 +328,7 @@ public class JSONParser {
                 }
 
                 else{
-                    new MalformedJSONException("Awkward character : " + c).throwException();
-                    return new ArrayList<>();
+                    throw new MalformedJSONException("Awkward character : " + c);
                 }
 
             }
@@ -366,8 +348,7 @@ public class JSONParser {
             if(tokenType == JSONToken.KEY){
                 tokens.poll();
                 if(!(node instanceof JSONObject)){
-                    new MalformedJSONException("There is key which was not in an object").throwException();
-                    return new JSONObject();
+                    throw new MalformedJSONException("There is key which was not in an object");
                 }
                 else {
                     ((JSONObject) node).set((String) token.getValue(), createNode(tokens));
@@ -378,9 +359,7 @@ public class JSONParser {
                 if(node == null)
                     node = new JSONObject();
                 else if(node instanceof JSONObject){
-                    new MalformedJSONException("There is an object without a key").throwException();
-                    tokens.poll();
-                    return new JSONObject();
+                    throw new MalformedJSONException("There is an object without a key");
                 }
                 else{
                     ((JSONArray)node).add(createNode(tokens));
@@ -391,9 +370,7 @@ public class JSONParser {
                 if(node == null)
                     node = new JSONArray();
                 else if(node instanceof JSONObject){
-                    new MalformedJSONException("There is an array in an object without key").throwException();
-                    tokens.poll();
-                    return new JSONObject();
+                    throw new MalformedJSONException("There is an array in an object without key");
                 }
                 else{
                     ((JSONArray)node).add(createNode(tokens));
@@ -414,9 +391,7 @@ public class JSONParser {
                     return new JSONValue<>(token.getValue());
                 }
                 else if(node instanceof JSONObject){
-                    new MalformedJSONException("Value inside an object without key").throwException();
-                    tokens.poll();
-                    return new JSONObject();
+                    throw new MalformedJSONException("Value inside an object without key");
                 }
                 else {
                     ((JSONArray)node).add(new JSONValue<>(token.getValue()));
@@ -427,8 +402,7 @@ public class JSONParser {
                 if(node instanceof JSONObject)
                     return node;
                 else{
-                    new MalformedJSONException("Try to end an object which was not started").throwException();
-                    return new JSONObject();
+                    throw new MalformedJSONException("Try to end an object which was not started");
                 }
             }
             else if(tokenType == JSONToken.END_ARRAY){
@@ -436,8 +410,7 @@ public class JSONParser {
                 if(node instanceof JSONArray)
                     return node;
                 else{
-                    new MalformedJSONException("Try to end an array which was not started").throwException();
-                    return new JSONObject();
+                    throw new MalformedJSONException("Try to end an array which was not started");
                 }
             }
 
@@ -464,6 +437,7 @@ public class JSONParser {
         return createNode(new LinkedList<>(decode(reader)));
     }
 
+    // jdk.nashorn.internal.parser.JSONParser#quote
     public static String quote(String value) {
         final StringBuilder product = new StringBuilder();
         product.append("\"");
